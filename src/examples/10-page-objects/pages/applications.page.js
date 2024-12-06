@@ -36,7 +36,6 @@ exports.ApplicationsPage = class ApplicationsPage extends AppPage {
     }
 
 }
-
 class TableRow {
 
     constructor(rowElement) {

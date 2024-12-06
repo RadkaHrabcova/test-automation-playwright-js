@@ -6,7 +6,7 @@ export const username = ADMIN_USERNAME;
 export const password = ADMIN_PASSWORD;
 export const userFullName = 'Lišák Admin';
 export const applicationsPageSize = 10;
-export const applicationsSearchText = 'Eli';
+export const applicationsSearchText = 'eli';
 
 export const ApplicationTexts = {
     loginPage: {
