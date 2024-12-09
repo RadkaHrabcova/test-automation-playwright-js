@@ -13,15 +13,14 @@ exports.RegistrationPage = class RegistrationPage {
         
         this.toast = this.page.locator('.toast-message');
         this.fieldError = this.page.locator('.invalid-feedback');
-        this.navbarRight = this.page.locator('.navbar-right');
-        this.usernameDropdown = this.navbarRight.locator('[data-toggle="dropdown"]');
+       
     }
 
     async open() {
         await this.page.goto('/registrace');
     }
 
-    async register() {
+    async registerWithUniqueEmail() {
         const uniqueEmail = `pavel${Date.now()}@gmail.com`;
         const userName = 'Pavel';
         await this.nameField.fill(userName);
@@ -31,6 +30,15 @@ exports.RegistrationPage = class RegistrationPage {
         await this.registerButton.click();
 
         return {userName, uniqueEmail};
+    }
+
+    async registerWithInvalidPassword() {
+        const uniqueEmail = `Marek${Date.now()}@gmail.com`;
+        await this.nameField.fill('Marek');
+        await this.emailField.fill('marek@seznam.cz');
+        await this.passwordField.fill('123456789');
+        await this.passwordConfirm.fill('123456789');
+        await this.registerButton.click();
     }
     
 }
