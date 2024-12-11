@@ -20,24 +20,11 @@ exports.RegistrationPage = class RegistrationPage {
         await this.page.goto('/registrace');
     }
 
-    async registerWithUniqueEmail() {
-        const uniqueEmail = `pavel${Date.now()}@gmail.com`;
-        const userName = 'Pavel';
+    async registerUser({ email, userName, password }) {
         await this.nameField.fill(userName);
-        await this.emailField.fill(uniqueEmail);
-        await this.passwordField.fill('1PavelOtak');
-        await this.passwordConfirm.fill('1PavelOtak');
-        await this.registerButton.click();
-
-        return {userName, uniqueEmail};
-    }
-
-    async registerWithInvalidPassword() {
-        const uniqueEmail = `Marek${Date.now()}@gmail.com`;
-        await this.nameField.fill('Marek');
-        await this.emailField.fill('marek@seznam.cz');
-        await this.passwordField.fill('123456789');
-        await this.passwordConfirm.fill('123456789');
+        await this.emailField.fill(email);
+        await this.passwordField.fill(password);
+        await this.passwordConfirm.fill(password);
         await this.registerButton.click();
     }
     

@@ -1,7 +1,6 @@
 exports.AppPage = class AppPage {
 
-    constructor(page, url) {
-        this.url = url;
+    constructor(page) {
         this.page = page;
         this.toast = this.page.locator('.toast-message');
         this.navbarRight = this.page.locator('.navbar-right');

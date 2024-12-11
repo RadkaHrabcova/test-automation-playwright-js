@@ -1,95 +1,75 @@
-/*1. Test který přejde na formulář registrace
-zkontroluje, že se formulář správně zobrazil 
-
-2. Test který provede validní registraci uživatele
-zkontroluj, že registrace proběhla úspěšně
-
-3. Test, který provede registraci uživatele s již existujícím emailem
-zkontroluj, že registrace neproběhla a ověř chyby
-zkontroluj stav formuláře
-tip: elementy s třídou invalid-feedback
-
-4. Test, který provede registraci uživatele s nevalidním heslem (obsahující pouze čísla)
-zkontroluj, že registrace neproběhla a ověř chyby
-zkontroluj stav formuláře
-*/
-
-import {expect, test} from "@playwright/test";
-import {AppPage} from "./pages/app.page.js";
-import {RegistrationPage} from "./pages/registration.page.js";
-
-
+import { expect, test } from "@playwright/test";
+import { AppPage } from "./pages/app.page.js";
+import { RegistrationPage } from "./pages/registration.page.js";
 
 test.describe('Registration Page', () => {
     let registrationPage;
     let appPage;
 
-    test.beforeEach(async ({page}) => {
+    test.beforeEach(async ({ page }) => {
         registrationPage = new RegistrationPage(page);
         appPage = new AppPage(page);
         await registrationPage.open();
     });
 
-    test('should show registration form', async ({ page }) => {
-        await expect(registrationPage.nameField, 'name field should be visible').toBeVisible();
-        await expect(registrationPage.nameField, 'name field should be enabled').toBeEnabled();
+    test('should show registration form', async () => {
+        await expect(registrationPage.nameField).toBeVisible();
+        await expect(registrationPage.nameField).toBeEnabled();
 
-        await expect(registrationPage.emailField, 'email field should be visible').toBeVisible();
-        await expect(registrationPage.emailField, 'email field should be enabled').toBeEnabled();
+        await expect(registrationPage.emailField).toBeVisible();
+        await expect(registrationPage.emailField).toBeEnabled();
 
-        await expect(registrationPage.passwordField, 'password field should be visible').toBeVisible();
-        await expect(registrationPage.passwordField, 'password field should be enabled').toBeEnabled();
+        await expect(registrationPage.passwordField).toBeVisible();
+        await expect(registrationPage.passwordField).toBeEnabled();
 
-        await expect(registrationPage.passwordConfirm, 'password confirm field should be visible').toBeVisible();
-        await expect(registrationPage.passwordConfirm, 'password confirm field should be enabled').toBeEnabled();
+        await expect(registrationPage.passwordConfirm).toBeVisible();
+        await expect(registrationPage.passwordConfirm).toBeEnabled();
 
-        await expect(registrationPage.registerButton, 'register button should be visible').toBeVisible();
-        await expect(registrationPage.registerButton, 'register button text should have text').toHaveText('Zaregistrovat')
-
-
+        await expect(registrationPage.registerButton).toBeVisible();
+        await expect(registrationPage.registerButton).toHaveText('Zaregistrovat');
     });
 
-    test('should register with valid credentials', async ({ page }) => {
-        const {userName} = await registrationPage.registerWithUniqueEmail();
+    test('should register with valid credentials', async () => {
+        const uniqueEmail = `pavel${Date.now()}@gmail.com`;
+        const userName = 'Pavel';
+        await registrationPage.registerUser({ email: uniqueEmail, userName, password: '1PavelOtak' });
+
         await expect(appPage.usernameDropdown, 'current user should be displayed').toHaveText(userName);
     });
 
-  test('should not register with existing email', async ({ page }) => {
-        //creating new registration
-        const {userName, uniqueEmail} = await registrationPage.registerWithUniqueEmail();
+    test('should not register with existing email', async () => {
+        // Register a new user
+        const uniqueEmail = `pavel${Date.now()}@gmail.com`;
+        const userName = 'Pavel';
+        await registrationPage.registerUser({ email: uniqueEmail, userName, password: '1PavelOtak' });
         await expect(appPage.usernameDropdown, 'current user should be displayed').toHaveText(userName);
 
+        // Log out and try to register again with the same email
         await appPage.usernameDropdown.click();
         await appPage.logoutLink.click();
-        await registrationPage.open()
+        await registrationPage.open();
 
-        //register with existing email
-        await registrationPage.nameField.fill(userName);
-        await registrationPage.emailField.fill(uniqueEmail);
-        await registrationPage.passwordField.fill('1PavelOtak');
-        await registrationPage.passwordConfirm.fill('1PavelOtak');
-        await registrationPage.registerButton.click();
+        await registrationPage.registerUser({ email: uniqueEmail, userName, password: '1PavelOtak' });
 
         await expect(registrationPage.fieldError).toHaveText('Účet s tímto emailem již existuje');
-        await expect(registrationPage.nameField, 'name field should be visible').toBeVisible();
-        await expect(registrationPage.emailField, 'email field should be visible').toBeVisible();
-        await expect(registrationPage.passwordField, 'password field should be visible').toBeVisible();
-        await expect(registrationPage.passwordConfirm, 'password confirm field should be visible').toBeVisible();
-        await expect(registrationPage.registerButton, 'register button should be visible').toBeVisible();
-        
+        await expect(registrationPage.nameField).toBeVisible();
+        await expect(registrationPage.emailField).toBeVisible();
+        await expect(registrationPage.passwordField).toBeVisible();
+        await expect(registrationPage.passwordConfirm).toBeVisible();
+        await expect(registrationPage.registerButton).toBeVisible();
     });
 
-    test('should not register with invalid password', async ({ page }) => {
-       await registrationPage.registerWithInvalidPassword();
+    test('should not register with invalid password', async () => {
+        const uniqueEmail = `marek${Date.now()}@gmail.com`;
+        await registrationPage.registerUser({ email: uniqueEmail, userName: 'Marek', password: '123456789' });
 
-       await expect(registrationPage.fieldError).toHaveText('Heslo musí obsahovat minimálně 6 znaků, velké i malé písmeno a číslici');
-       await expect(registrationPage.toast).toHaveText('Některé pole obsahuje špatně zadanou hodnotu');
-       
-       await expect(registrationPage.nameField, 'name field should be visible').toBeVisible();
-       await expect(registrationPage.emailField, 'email field should be visible').toBeVisible();
-       await expect(registrationPage.passwordField, 'password field should be visible').toBeVisible();
-       await expect(registrationPage.passwordConfirm, 'password confirm field should be visible').toBeVisible();
-       await expect(registrationPage.registerButton, 'register button should be visible').toBeVisible();
-      
+        await expect(registrationPage.fieldError).toHaveText('Heslo musí obsahovat minimálně 6 znaků, velké i malé písmeno a číslici');
+        await expect(registrationPage.toast).toHaveText('Některé pole obsahuje špatně zadanou hodnotu');
+
+        await expect(registrationPage.nameField).toBeVisible();
+        await expect(registrationPage.emailField).toBeVisible();
+        await expect(registrationPage.passwordField).toBeVisible();
+        await expect(registrationPage.passwordConfirm).toBeVisible();
+        await expect(registrationPage.registerButton).toBeVisible();
     });
 });
