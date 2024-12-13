@@ -34,3 +34,6 @@ exports.OrderPage = class OrderPage {
     await this.page.goto("/objednavka/pridat");
   }
 };
+
+
+ 

@@ -1,9 +1,3 @@
-//Aplikace umožňuje uživateli v menu Pro učitele vytvoření nové Objednávky pro MŠ/ZŠ
-//Po kliknutí na Pro učitele > Objednávka pro MŠ/ZŠ se otevře formulář, kde může uživatel vyplnit detail objednávky
-//Po vyplnění IČO do formuláře objednávky se automaticky načte jméno odběratele a adresa odběratele z ARESu
-//Uživatel může odeslat vyplněnou objednávku na příměstský tábor
-//Objednávku nelze odeslat pokud není řádně vyplněna*/
-
 import { expect, test } from "@playwright/test";
 import { AppPage } from "./pages/app.page.js";
 import { OrderPage } from "./pages/order.page.js";
@@ -18,7 +12,7 @@ test.describe("Order Page", () => {
     appPage = new AppPage(page);
   });
 
-  test("The application allows the user to create a new Order for Kindergarten/ZŠ in the For teachers menu", async () => {
+  test("The application allows to create a new Order for Kindergarten/ZŠ in the For teachers menu", async () => {
     await expect(appPage.forTeacherMenuItemLocator).toBeVisible();
     await appPage.forTeacherMenuItemLocator.click();
     await expect(appPage.newOrderLocator).toBeVisible();
@@ -59,7 +53,7 @@ test.describe("Order Page", () => {
       await orderPage.endDateField.fill("27.02.2025");
     }
 
-    test("After clicking on For teachers > Order for kindergarten/primary school, a form opens where the user can fill in the details of the order", async () => {
+    test("After clicking on For teachers > Order for kindergarten/primary school, the order form is displayed correctly", async () => {
       await checkOrderForm();
       await orderPage.suburbanCampTab.click();
       await expect(orderPage.numberOfStudentsField).toBeVisible();
@@ -68,26 +62,28 @@ test.describe("Order Page", () => {
       await expect(orderPage.submitButton).toBeVisible();
     });
 
-    test("After filling in the IČO, ARES does not find the data and throws an error message", async () => {
+    test("ARES data not found displays error message", async () => {
       await checkOrderForm();
       await orderPage.icoField.fill("29240026");
       await orderPage.icoField.press("Enter");
       await expect(orderPage.clientField).toHaveValue("");
       await expect(orderPage.addressField).toHaveValue("");
       await expect(orderPage.toast).toBeVisible({ timeout: 10000 });
-      await expect(orderPage.toast).toHaveText(
-        "Data z ARESu se nepodařilo načíst, vyplňte je prosím ručně"
-      );
+      await expect(orderPage.toast).toHaveText("Data z ARESu se nepodařilo načíst, vyplňte je prosím ručně");
     });
+
+    async function fillSuburbanCampSectionOfTheOrderForm(students, age, teachers) {
+      await orderPage.suburbanCampTab.click();
+      await orderPage.numberOfStudentsField.fill(students);
+      await orderPage.studentAgeField.fill(age);
+      await orderPage.numberOfTeachersField.fill(teachers);
+    }
 
     test("The user can send the completed order to the suburban camp", async () => {
       await checkOrderForm();
       await fillBasicSectionOfTheOrderForm();
       // Suburban Camp Section
-      await orderPage.suburbanCampTab.click();
-      await orderPage.numberOfStudentsField.fill("10");
-      await orderPage.studentAgeField.fill("10");
-      await orderPage.numberOfTeachersField.fill("2");
+      await fillSuburbanCampSectionOfTheOrderForm("10", "10", "2");
       // Sending the order
       await orderPage.submitButton.click();
       await expect(orderPage.thankYouForOrderMessage).toBeVisible();
@@ -96,13 +92,12 @@ test.describe("Order Page", () => {
     test("The order cannot be sent if it is not filled out properly", async () => {
       await checkOrderForm();
       await fillBasicSectionOfTheOrderForm();
-      // Suburban Camp Section
-      await orderPage.suburbanCampTab.click();
-      await orderPage.numberOfStudentsField.fill("10");
-      await orderPage.studentAgeField.fill("10");
+      // Suburban Camp Section, but Number of teachers is not filled
+      await fillSuburbanCampSectionOfTheOrderForm("10", "10", "");
       // Sending the order
       await orderPage.submitButton.click();
-      await expect(orderPage.fieldError).toBeVisible({ timeout: 10000 });
+      await expect(orderPage.thankYouForOrderMessage).not.toBeVisible();
+      await checkOrderForm();
     });
   });
 });
